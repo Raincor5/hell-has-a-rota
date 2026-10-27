@@ -19,7 +19,7 @@ namespace hhar.characters.progression
 
         public void LevelUp()
         {
-            while (Experience >= ExperienceToNextLevel)
+            if (Experience >= ExperienceToNextLevel)
             {
                 Experience -= ExperienceToNextLevel; // Reset experience after leveling up
                 Level++;

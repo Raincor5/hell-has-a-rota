@@ -106,5 +106,20 @@ namespace hhar.characters.stats
             }
             CalculateModifiers();
         }
+
+        public string GetStatSummary()
+        {
+            return $"Health: {CurrentHealth}/{MaxHealth}, Stamina: {CurrentStamina}/{MaxStamina}, Attack Damage: {AttackDamage}, Defense: {Defense}, Hostility: {Hostility}, Intelligence: {Intelligence}, Wisdom: {Wisdom}, Charisma: {Charisma}, Luck: {Luck}";
+        }
+
+        public string GetBaseStatSummary()
+        {
+            return $"Base Health: {BaseHealth}, Base Stamina: {BaseStamina}, Base Attack Damage: {BaseAttackDamage}, Base Defense: {BaseDefense}, Base Hostility: {BaseHostility}, Base Intelligence: {BaseIntelligence}, Base Wisdom: {BaseWisdom}, Base Charisma: {BaseCharisma}, Base Luck: {BaseLuck}";
+        }
+
+        public string GetStatsToLevelUp()
+        {
+            return $"Health: {BaseHealth}, \nStamina: {BaseStamina}, \nAttack Damage: {BaseAttackDamage}, \nDefense: {BaseDefense}, \nIntelligence: {BaseIntelligence}, \nWisdom: {BaseWisdom}, \nCharisma: {BaseCharisma}, \nLuck: {BaseLuck}";
+        }
     }
 }
