@@ -4,5 +4,8 @@ namespace hhar.items {
         string Name { get; set; }
         string Description { get; set; }
         List<StatModifier> StatModifiers { get; set; }
+
+        public List<StatModifier> GetStatModifiers();
+
     }
 }
