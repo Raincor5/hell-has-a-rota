@@ -1,22 +1,10 @@
 using System;
 using System.IO;
 using hhar.characters.stats;
+using hhar.characters.stats.classes;
 
 namespace hhar.characters
 {
-    public enum StartingClass
-    {
-        Unassigned,
-        Slave,
-        Apprentice,
-        Deprived,
-        FortuneSeeker,
-        Veteran,
-        Penitent,
-        Butcher
-
-    }
-
     public enum StartingGift
     {
         LastRation,
@@ -45,7 +33,7 @@ namespace hhar.characters
 
     public record CreatedCharacter(
         Player Player,
-        StartingClass StartingClass,
+        ClassList StartingClass,
         StartingGift StartingGift,
         Difficulty Difficulty,
         Faction Faction);
@@ -68,8 +56,8 @@ namespace hhar.characters
 
             string name = ReadName();
 
-            StartingClass startingClass =
-                ReadChoice<StartingClass>("Choose your starting class:");
+            ClassList startingClass =
+                ReadChoice<ClassList>("Choose your starting class:");
 
             StartingGift gift =
                 ReadChoice<StartingGift>("Choose your starting gift:");
@@ -80,10 +68,8 @@ namespace hhar.characters
             Faction faction =
                 ReadChoice<Faction>("Choose your faction:");
 
-            Player player = new Player(name)
-            {
-                Stats = CreateStats(startingClass)
-            };
+            Player player = new Player(name);
+            new AssignClass(startingClass, player.Stats);
 
             ApplyGift(player, gift);
 
@@ -146,60 +132,6 @@ namespace hhar.characters
             return Console.ReadLine()
                 ?? throw new EndOfStreamException(
                     "Console input was closed.");
-        }
-
-        private static CharacterStats CreateStats(
-            StartingClass startingClass)
-        {
-            CharacterStats stats = new CharacterStats
-            {
-                BaseHealth = 20,
-                BaseStamina = 10,
-                BaseAttackDamage = 5,
-                BaseDefense = 5,
-                BaseHostility = 0,
-                BaseIntelligence = 5,
-                BaseWisdom = 5,
-                BaseCharisma = 5,
-                BaseLuck = 5
-            };
-
-            switch (startingClass)
-            {
-                case StartingClass.Unassigned:
-                    break;
-                case StartingClass.Slave:
-                    stats.BaseHealth += 5;
-                    stats.BaseStamina += 5;
-                    break;
-                case StartingClass.Apprentice:
-                    stats.BaseIntelligence += 5;
-                    stats.BaseWisdom += 5;
-                    break;
-                case StartingClass.Deprived:
-                    stats.BaseAttackDamage += 5;
-                    stats.BaseDefense += 5;
-                    break;
-                case StartingClass.FortuneSeeker:
-                    stats.BaseLuck += 10;
-                    break;
-                case StartingClass.Veteran:
-                    stats.BaseCharisma += 5;
-                    stats.BaseAttackDamage += 5;
-                    break;
-                case StartingClass.Penitent:
-                    stats.BaseWisdom += 10;
-                    break;
-                case StartingClass.Butcher:
-                    stats.BaseDefense += 5;
-                    stats.BaseHostility += 10;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(startingClass));
-            }
-
-            return stats;
         }
 
 private static void ApplyGift(Player player, StartingGift gift)
