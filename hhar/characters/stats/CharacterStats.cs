@@ -31,6 +31,26 @@ namespace hhar.characters.stats
 
         private List<StatModifier> _modifiers = [];
 
+        public CharacterStats SetBaseStats()
+        {
+            BaseHealth = 20;
+            BaseStamina = 10;
+            BaseAttackDamage = 5;
+            BaseDefense = 5;
+            BaseHostility = 0;
+            BaseIntelligence = 5;
+            BaseWisdom = 5;
+            BaseCharisma = 5;
+            BaseLuck = 5;
+
+            CalculateModifiers();
+
+            CurrentHealth = MaxHealth;
+            CurrentStamina = MaxStamina;
+
+            return this;
+        }
+
         // Using LINQ to calculate the total modifiers for each stat
         public void CalculateModifiers()
         {
@@ -40,7 +60,7 @@ namespace hhar.characters.stats
             MaxStamina = BaseStamina + _modifiers.Where(m => m.StatName == "MaxStamina").Sum(m => m.Modifier);
             CurrentHealth = Math.Min(CurrentHealth, MaxHealth);
             CurrentStamina = Math.Min(CurrentStamina, MaxStamina);
-            Hostility = _modifiers.Where(m => m.StatName == "Hostility").Sum(m => m.Modifier);
+            Hostility = BaseHostility + _modifiers.Where(m => m.StatName == "Hostility").Sum(m => m.Modifier);
             Intelligence = BaseIntelligence + _modifiers.Where(m => m.StatName == "Intelligence").Sum(m => m.Modifier);
             Wisdom = BaseWisdom + _modifiers.Where(m => m.StatName == "Wisdom").Sum(m => m.Modifier);
             Charisma = BaseCharisma + _modifiers.Where(m => m.StatName == "Charisma").Sum(m => m.Modifier);
