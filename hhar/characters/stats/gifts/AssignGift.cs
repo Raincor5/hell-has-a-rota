@@ -7,7 +7,7 @@ namespace hhar.characters.stats.gifts
         public AssignGift(GiftList startingGift, CharacterStats stats)
         {
             Gift = startingGift;
-            Stats = stats.SetBaseStats();
+            Stats = stats;
             ApplyGift(Stats, Gift);
             Stats.CalculateModifiers();
         }
