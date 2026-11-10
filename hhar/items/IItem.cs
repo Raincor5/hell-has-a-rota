@@ -6,6 +6,6 @@ namespace hhar.items {
         List<StatModifier> StatModifiers { get; set; }
 
         public List<StatModifier> GetStatModifiers();
-
+        public void OnUse();
     }
 }

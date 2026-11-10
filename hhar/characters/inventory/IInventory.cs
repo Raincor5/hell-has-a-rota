@@ -3,8 +3,9 @@ namespace hhar.characters.inventory
 {
     public interface IInventory
     {
-        List<IItem> Items {get; set;}
+        Dictionary<int, InventorySlot> Items { get; set; }
         void AddItem(IItem item);
+        void AddItem(IItem item, int slot);
         void RemoveItem(IItem item);
     }
 }

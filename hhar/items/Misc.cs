@@ -18,5 +18,10 @@ namespace hhar.items
         {
             return StatModifiers;
         }
+
+        public void OnUse()
+        {
+            // Implementation for using the item
+        }
     }
 }
