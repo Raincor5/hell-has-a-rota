@@ -2,20 +2,10 @@ using System;
 using System.IO;
 using hhar.characters.stats;
 using hhar.characters.stats.classes;
+using hhar.characters.stats.gifts;
 
 namespace hhar.characters
 {
-    public enum StartingGift
-    {
-        LastRation,
-        UnpaidGartitude,
-        DyingEmber,
-        FalseReference,
-        LastBreak,
-        InheritedHardship,
-        ForbiddenRecipe,
-        MemoryOfHome
-    }
 
     public enum Difficulty
     {
@@ -34,7 +24,7 @@ namespace hhar.characters
     public record CreatedCharacter(
         Player Player,
         ClassList StartingClass,
-        StartingGift StartingGift,
+        GiftList StartingGift,
         Difficulty Difficulty,
         Faction Faction);
 
@@ -59,8 +49,8 @@ namespace hhar.characters
             ClassList startingClass =
                 ReadChoice<ClassList>("Choose your starting class:");
 
-            StartingGift gift =
-                ReadChoice<StartingGift>("Choose your starting gift:");
+            GiftList gift =
+                ReadChoice<GiftList>("Choose your starting gift:");
 
             Difficulty difficulty =
                 ReadChoice<Difficulty>("Choose your difficulty:");
@@ -71,7 +61,7 @@ namespace hhar.characters
             Player player = new Player(name);
             new AssignClass(startingClass, player.Stats);
 
-            ApplyGift(player, gift);
+            new AssignGift(gift, player.Stats);
 
             player.Stats.CalculateModifiers();
             player.Stats.CurrentHealth = player.Stats.MaxHealth;
@@ -134,66 +124,5 @@ namespace hhar.characters
                     "Console input was closed.");
         }
 
-private static void ApplyGift(Player player, StartingGift gift)
-{
-    StatModifier[] modifiers = gift switch
-    {
-        StartingGift.LastRation =>
-        [
-            new("Well Fed", "MaxHealth", 5, "Last Ration"),
-            new("Reserve Strength", "MaxStamina", 2, "Last Ration")
-        ],
-
-        StartingGift.UnpaidGartitude =>
-        [
-            new("Motivated", "AttackDamage", 3, "Unpaid Gratitude"),
-            new("Driven", "MaxStamina", 2, "Unpaid Gratitude")
-        ],
-        
-        StartingGift.DyingEmber =>
-        [
-            new("Burning Spirit", "AttackDamage", 5, "Dying Ember"),
-            new("Flickering Flame", "MaxHealth", -2, "Dying Ember")
-        ],
-
-
-        StartingGift.FalseReference =>
-        [
-            new("Deceptive", "Charisma", 4, "False Reference"),
-            new("Cunning", "Intelligence", 3, "False Reference")
-        ],
-
-        StartingGift.LastBreak =>
-        [
-            new("Resilient", "Defense", 3, "Last Break"),
-            new("Unyielding", "MaxHealth", 2, "Last Break")
-        ],
-
-        StartingGift.InheritedHardship =>
-        [
-            new("Hardened", "Defense", 3, "Inherited Hardship"),
-            new("Enduring", "MaxHealth", 3, "Inherited Hardship")
-        ],
-
-        StartingGift.ForbiddenRecipe =>
-        [
-            new("Culinary Genius", "Intelligence", 5, "Forbidden Recipe"),
-            new("Secret Knowledge", "Wisdom", 3, "Forbidden Recipe")
-        ],
-
-        StartingGift.MemoryOfHome =>
-        [
-            new("Nostalgic", "Charisma", 3, "Memory of Home"),
-            new("Comforted", "MaxHealth", 2, "Memory of Home")
-        ],
-
-        _ => throw new ArgumentOutOfRangeException(nameof(gift))
-    };
-
-    foreach (StatModifier modifier in modifiers)
-    {
-        player.Stats.AddModifier(modifier);
-    }
-}
     }
 }
