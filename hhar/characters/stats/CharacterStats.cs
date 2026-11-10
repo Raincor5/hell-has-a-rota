@@ -141,5 +141,21 @@ namespace hhar.characters.stats
         {
             return $"Health: {BaseHealth}, \nStamina: {BaseStamina}, \nAttack Damage: {BaseAttackDamage}, \nDefense: {BaseDefense}, \nIntelligence: {BaseIntelligence}, \nWisdom: {BaseWisdom}, \nCharisma: {BaseCharisma}, \nLuck: {BaseLuck}";
         }
+
+        public List<int> GetStatsAsList()
+        {
+            return new List<int>
+            {
+                BaseHealth,
+                BaseStamina,
+                BaseAttackDamage,
+                BaseDefense,
+                BaseHostility,
+                BaseIntelligence,
+                BaseWisdom,
+                BaseCharisma,
+                BaseLuck
+            };
+        }
     }
 }
