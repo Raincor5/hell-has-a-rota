@@ -4,7 +4,6 @@ namespace hhar.characters.inventory
     public class PlayerInventory : IInventory
     {
         public Dictionary<int, InventorySlot> Items { get; set; }
-        public IEquipment Equipment { get; set; }
 
         public PlayerInventory(int slotCount = 20)
         {
@@ -18,8 +17,6 @@ namespace hhar.characters.inventory
             {
                 Items[slot] = new InventorySlot();
             }
-
-            Equipment = new PlayerEquipment();
         }
 
         public void AddItem(IItem item)
@@ -60,4 +57,4 @@ namespace hhar.characters.inventory
             slot?.Clear();
         }
     }
-}
+}   

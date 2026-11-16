@@ -9,15 +9,16 @@ namespace hhar.items
         public string Name { get; set; }
         public string Description { get; set; }
         public List<StatModifier> StatModifiers { get; set; }
-
+        private Func<Player, object?, bool> _onUse;
         public EquipmentSlots EquipmentSlot => EquipmentSlots.QuickSlot;
+
+        public Rarity Rarity { get; set; }
 
         public List<StatModifier> GetStatModifiers()
         {
             return StatModifiers;
         }
 
-        private Func<Player, object?, bool> _onUse;
         public dynamic OnUse<T>(Player player, T target)
         {
             // Implementation for using the item
@@ -28,8 +29,7 @@ namespace hhar.items
                 stats.AddModifiers(statsToApply);
                 return this;   
             }
-            return null; // Or some other appropriate return value if target is not null
+            return _onUse(player, target); // Or some other appropriate return value if target is not null (usage: OnUse(this, player))
         }
-
     }
 }
