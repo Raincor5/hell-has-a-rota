@@ -7,15 +7,18 @@ namespace hhar.items
     {
         public string Name { get; set; }
         public string Description { get; set; }
+
+        private Func<Player, object?, bool> _onUse;
         public List<StatModifier> StatModifiers { get; set; }
 
         public EquipmentSlots EquipmentSlot => EquipmentSlots.NotEquipment;
 
-        public Misc(string name, string description, List<StatModifier> statModifiers)
+        public Misc(string name, string description, List<StatModifier> statModifiers, Func<Player, object?, bool> useAction = null)
         {
             Name = name;
             Description = description;
             StatModifiers = statModifiers;
+            _onUse = useAction;
         }
     
         public List<StatModifier> GetStatModifiers()
@@ -33,7 +36,7 @@ namespace hhar.items
                 stats.AddModifiers(statsToApply);
                 return this;   
             }
-            return null; // Or some other appropriate return value if target is not null
+            return _onUse(player, target);
         }
     }
 }

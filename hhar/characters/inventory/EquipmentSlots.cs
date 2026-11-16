@@ -4,12 +4,8 @@ namespace hhar.characters.inventory
     {
         LeftHand,
         RightHand,
-        QuickSlot1,
-        QuickSlot2,
-        QuickSlot3,
-        QuickSlot4,
-        Accessory1,
-        Accessory2,
+        QuickSlot,
+        Accessory,
         NotEquipment
     }
 }
