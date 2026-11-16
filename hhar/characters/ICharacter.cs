@@ -9,5 +9,9 @@ namespace hhar.characters {
         LevelProgression LevelProgression {get; set;}
         CharacterStats Stats {get; set;}
        IInventory Inventory {get; set;}
+
+       void TakeDamage(int damage);
+
+       void DealDamage(ICharacter target, IItem Weapon);
     }
 }

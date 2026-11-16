@@ -1,5 +1,5 @@
 using hhar.items;
-
+using hhar.characters.stats;
 namespace hhar.characters.inventory
 {
     public class InventorySlot : ISlot
@@ -10,13 +10,29 @@ namespace hhar.characters.inventory
 
         private int _quantity;
 
+        public InventorySlot(IItem? item = null, int quantity = 0)
+        {
+            if (quantity < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(quantity));
+            }
+
+            Item = item;
+            _quantity = quantity;
+        }
+
         public void AddItem(IItem item, int quantity = 1)
         {
             ArgumentNullException.ThrowIfNull(item);
 
+            if (quantity <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(quantity));
+            }
+
             if (Item is null || Item.Equals(item))
             {
-                Item = item;
+                Item ??= item;
                 _quantity += quantity;
             }
             else
@@ -53,25 +69,26 @@ namespace hhar.characters.inventory
             return Item is null || Quantity <= 0;
         }
 
-        public InventorySlot(IItem? item = null, int quantity = 0)
-        {
-            if (quantity < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(quantity));
-            }
-
-            Item = item;
-            _quantity = quantity;
-        }
-
-        public void UseItem()
+        public void UseItem(Player player)
         {
             if (Item is null)
             {
                 throw new InvalidOperationException("No item to use in this slot.");
             }
             
-            Item.OnUse();
+            if (Item.EquipmentSlot != EquipmentSlots.NotEquipment)
+            {
+                try
+                {
+                    player.Equipment.EquipItem(Item, Item.EquipmentSlot);
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine($"Error equipping item: {ex.Message}");
+                    return;
+                }
+            }
+            Item.OnUse(player, player.Stats);
             RemoveItem(1);
         }
     }

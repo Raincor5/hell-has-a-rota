@@ -84,9 +84,24 @@ namespace hhar.characters.stats
             CalculateModifiers();
         }
 
+        public void AddModifiers(List<StatModifier> modifiers)
+        {
+            _modifiers.AddRange(modifiers);
+            CalculateModifiers();
+        }
+
         public void RemoveModifier(StatModifier modifier)
         {
             _modifiers.Remove(modifier);
+            CalculateModifiers();
+        }
+
+        public void RemoveModifiers(List<StatModifier> modifiers)
+        {
+            foreach (var modifier in modifiers)
+            {
+                _modifiers.Remove(modifier);
+            }
             CalculateModifiers();
         }
 

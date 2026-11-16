@@ -1,4 +1,6 @@
 using hhar.characters.stats;
+using hhar.characters.inventory;
+using hhar.characters;
 namespace hhar.items {
     public interface IItem {
         string Name { get; set; }
@@ -6,6 +8,7 @@ namespace hhar.items {
         List<StatModifier> StatModifiers { get; set; }
 
         public List<StatModifier> GetStatModifiers();
-        public void OnUse();
+        public dynamic OnUse<T>(Player player, T target);
+        public EquipmentSlots EquipmentSlot { get; }
     }
 }

@@ -9,6 +9,7 @@ namespace hhar.characters.inventory
         QuickSlot3,
         QuickSlot4,
         Accessory1,
-        Accessory2
+        Accessory2,
+        NotEquipment
     }
 }

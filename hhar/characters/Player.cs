@@ -10,12 +10,27 @@ namespace hhar.characters {
         public CharacterStats Stats { get; set; }
         public IInventory Inventory { get; set; }
 
+        public IEquipment Equipment { get; set; }
+
         public Player(string name)
         {
             Name = name;
             LevelProgression = new LevelProgression(5);
             Stats = new CharacterStats();
             Inventory = new PlayerInventory();
+            Equipment = new PlayerEquipment();
+        }
+
+        public void TakeDamage(int damage)
+        {
+            Stats.CurrentHealth -= damage;
+            Console.WriteLine($"{Name} took {damage} damage. Remaining health: {Stats.CurrentHealth}");
+        }
+
+        public void DealDamage(ICharacter target, IItem Weapon)
+        {
+            var damage = ((Weapon)Weapon).Damage;
+            target.TakeDamage(damage);
         }
     }
 }
