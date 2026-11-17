@@ -15,6 +15,17 @@ namespace hhar.items
             Quest
         }
 
+        public static readonly List<string> modifiersConsumablesName = new List<string>
+            {
+                "Invigorating",
+                "Energizing",
+                "Refreshing",
+                "Fortifying",
+                "Stimulating",
+                "Rejuvenating",
+                "Revitalizing"
+            };
+
         private sealed record ItemDefinitions(string Name, string Description, ItemType Type, string? Stat = null, int Damage = 0);
 
         private readonly Random _random;
@@ -119,18 +130,19 @@ namespace hhar.items
 
             string stat = definition.Stat ?? throw new ArgumentException($"Item {definition.Name} does not have a stat defined.");
 
-            var modifiers = new List<StatModifier>
+            var modifiersConsumables = new List<StatModifier>
             {
-                new("Invigorating", stat, bonus, definition.Name)
+                new(modifiersConsumablesName[_random.Next(0, modifiersConsumablesName.Count)], stat, bonus, definition.Name)
             };
 
             if (definition.Type == ItemType.Potion)
             {
-                return new Potion(definition.Name, definition.Description, modifiers, rarity);
+                return new Potion(definition.Name, definition.Description, modifiersConsumables, rarity);
             }
-            var action = ItemActions.CreateAction(EquipmentSlots.QuickSlot, modifiers, rarity);
 
-            return new Misc(definition.Name, definition.Description, modifiers, action);
+            var action = ItemActions.CreateAction(EquipmentSlots.QuickSlot, modifiersConsumables, rarity);
+
+            return new Misc(definition.Name, definition.Description, modifiersConsumables, action);
         }
     }
 }
