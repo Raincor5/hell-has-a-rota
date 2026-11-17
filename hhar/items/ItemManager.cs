@@ -1,4 +1,6 @@
+using hhar.characters.inventory;
 using hhar.characters.stats;
+
 namespace hhar.items
 {
     public class ItemManager
@@ -61,5 +63,74 @@ namespace hhar.items
             { ItemIds.UnclaimedPayslip, new ItemDefinitions("Unclaimed Payslip", "A name. A number. A discrepancy.", ItemType.Quest) },
             { ItemIds.ExitInterviewTape, new ItemDefinitions("Exit Interview Tape", "The new blackmail strategy.", ItemType.Quest) }
         };
+
+        public ItemManager(Random? random = null)
+        {
+            _random = random ?? Random.Shared;
+
+            foreach (var id in Enum.GetValues<ItemIds>())
+            {
+                if (!Definitions.ContainsKey(id))
+                    throw new ArgumentException($"Item ID {id} does not have a corresponding definition.");
+            }
+        }
+    
+
+        public IItem CreateItem(ItemIds id)
+        {
+            if (!Definitions.TryGetValue(id, out var definition))
+                throw new ArgumentException($"Item ID {id} does not have a corresponding definition.");
+            
+            if (definition.Type == ItemType.Quest){
+                return new Misc(definition.Name, definition.Description, [], (player, target) => target is IQuestItemTarget receiver && receiver.TryUseItem(player, id));
+            }
+        
+            if (definition.Type is ItemType.Potion or ItemType.Consumable)
+            {
+                return CreateConsumable(definition);
+            }
+
+            var roll = _itemBuffs.RollBuff(definition.Name, _random);
+            string name = $"{roll.BuffName} {definition.Name}";
+
+            return definition.Type switch
+            {
+                ItemType.LeftHand => new Weapon(name, definition.Description, definition.Damage, roll.Modifiers, EquipmentSlots.LeftHand, roll.Tier),
+                ItemType.RightHand => new Weapon(name, definition.Description, definition.Damage, roll.Modifiers, EquipmentSlots.RightHand, roll.Tier),
+                ItemType.Accessory => new Accessory(name, definition.Description, roll.Modifiers, roll.Tier),
+                _ => throw new ArgumentOutOfRangeException($"Item type {definition.Type} is not supported.")
+            };
+        }
+
+        private IItem CreateConsumable(ItemDefinitions definition)
+        {
+            var rarity = ItemBuffs.RollRarity(_random);
+
+            // Starting balance weights, determines the strength of the action based on rarity.
+            int bonus = rarity switch
+            {
+                Rarity.Common => 1,
+                Rarity.Uncommon => 2,
+                Rarity.Rare => 4,
+                Rarity.Epic => 7,
+                Rarity.Legendary => 12,
+                _ => throw new ArgumentOutOfRangeException(nameof(rarity))
+            };
+
+            string stat = definition.Stat ?? throw new ArgumentException($"Item {definition.Name} does not have a stat defined.");
+
+            var modifiers = new List<StatModifier>
+            {
+                new("Invigorating", stat, bonus, definition.Name)
+            };
+
+            if (definition.Type == ItemType.Potion)
+            {
+                return new Potion(definition.Name, definition.Description, modifiers, rarity);
+            }
+            var action = ItemActions.CreateAction(EquipmentSlots.QuickSlot, modifiers, rarity);
+
+            return new Misc(definition.Name, definition.Description, modifiers, action);
+        }
     }
 }
