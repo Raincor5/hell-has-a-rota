@@ -23,7 +23,8 @@ namespace hhar.characters {
 
         public void TakeDamage(int damage)
         {
-            Stats.CurrentHealth -= damage;
+            damage = Stats.ConsumeBlock(damage);
+            Stats.CurrentHealth = Math.Max(0, Stats.CurrentHealth - damage);
             Console.WriteLine($"{Name} took {damage} damage. Remaining health: {Stats.CurrentHealth}");
         }
 

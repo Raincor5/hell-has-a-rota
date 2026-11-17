@@ -2,6 +2,23 @@ namespace hhar.characters.stats
 {
     public class CharacterStats
     {
+        private int _nextBlock;
+
+        public bool PrepareBlock(int power)
+        {
+            if (power <= _nextBlock) return false;
+            _nextBlock = power;
+            return true;
+        }
+
+        public int ConsumeBlock(int incomingDamage)
+        {
+            if (incomingDamage <= 0) return 0;
+            int remaining = Math.Max(0, incomingDamage - _nextBlock);
+            _nextBlock = 0;
+            return remaining;
+        }
+
         public int BaseHealth { get; set; }
         public int MaxHealth { get; set; }
         public int CurrentHealth { get; set; }

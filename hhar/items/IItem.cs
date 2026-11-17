@@ -9,6 +9,7 @@ namespace hhar.items {
 
         public List<StatModifier> GetStatModifiers();
         public dynamic OnUse<T>(Player player, T target);
+        bool Activate(Player player, object? target) => false;
         public EquipmentSlots EquipmentSlot { get; }
     }
 }

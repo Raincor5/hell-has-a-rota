@@ -9,7 +9,24 @@ namespace hhar.items
         public string Name { get; set; }
         public string Description { get; set; }
         public List<StatModifier> StatModifiers { get; set; }
-        private Func<Player, object?, bool> _onUse;
+        private Func<Player, object?, bool>? _onUse;
+
+        public Potion() { }
+
+        public Potion(string name, string description, List<StatModifier> modifiers, Rarity rarity)
+        {
+            Name = name;
+            Description = description;
+            StatModifiers = modifiers;
+            Rarity = rarity;
+            _onUse = ItemActions.CreateAction(EquipmentSlot, modifiers, rarity);
+        }
+
+        public bool Activate(Player player, object? target)
+        {
+            _onUse ??= ItemActions.CreateAction(EquipmentSlot, StatModifiers, Rarity);
+            return _onUse(player, target);
+        }
         public EquipmentSlots EquipmentSlot => EquipmentSlots.QuickSlot;
 
         public Rarity Rarity { get; set; }
@@ -29,7 +46,7 @@ namespace hhar.items
                 stats.AddModifiers(statsToApply);
                 return this;   
             }
-            return _onUse(player, target); // Or some other appropriate return value if target is not null (usage: OnUse(this, player))
+            return Activate(player, target);
         }
     }
 }

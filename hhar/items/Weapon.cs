@@ -10,10 +10,17 @@ namespace hhar.items
         public int Damage { get; set; }
         public List<StatModifier> StatModifiers { get; set; }
 
-        public EquipmentSlots EquipmentSlot { get; } = EquipmentSlots.RightHand; // Default to RightHand, can be changed as needed
+        public EquipmentSlots EquipmentSlot { get; }
+        private readonly Func<Player, object?, bool> _action;
+        public bool Activate(Player player, object? target) => _action(player, target);
 
-        public Weapon(string name, string description, int damage, List<StatModifier> statModifiers)
+        public Weapon(string name, string description, int damage, List<StatModifier> statModifiers,
+            EquipmentSlots slot = EquipmentSlots.RightHand, Rarity rarity = Rarity.Common)
         {
+            if (slot is not (EquipmentSlots.LeftHand or EquipmentSlots.RightHand))
+                throw new ArgumentOutOfRangeException(nameof(slot));
+            EquipmentSlot = slot;
+            _action = ItemActions.CreateAction(slot, statModifiers, rarity);
             Name = name;
             Description = description;
             Damage = damage;

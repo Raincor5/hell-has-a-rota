@@ -37,6 +37,13 @@ namespace hhar.characters.inventory
             }
         }
 
+        public bool Activate(Player player, object? target = null)
+        {
+            if (Item is null || !Item.Activate(player, target)) return false;
+            if (Item is Potion) RemoveItem(1);
+            return true;
+        }
+
         public void Clear()
         {
             Item = null;

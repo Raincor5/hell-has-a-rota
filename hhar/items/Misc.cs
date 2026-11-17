@@ -8,12 +8,13 @@ namespace hhar.items
         public string Name { get; set; }
         public string Description { get; set; }
 
-        private Func<Player, object?, bool> _onUse;
+        private readonly Func<Player, object?, bool>? _onUse;
+        public bool Activate(Player player, object? target) => _onUse?.Invoke(player, target) ?? false;
         public List<StatModifier> StatModifiers { get; set; }
 
         public EquipmentSlots EquipmentSlot => EquipmentSlots.NotEquipment;
 
-        public Misc(string name, string description, List<StatModifier> statModifiers, Func<Player, object?, bool> useAction = null)
+        public Misc(string name, string description, List<StatModifier> statModifiers, Func<Player, object?, bool>? useAction = null)
         {
             Name = name;
             Description = description;
@@ -30,13 +31,14 @@ namespace hhar.items
         {
             // Implementation for using the item
             Console.WriteLine($"{Name} has been used.");
+            if (_onUse != null) return Activate(player, target);
             if (target is CharacterStats stats)
             {
                 var statsToApply =  GetStatModifiers();
                 stats.AddModifiers(statsToApply);
                 return this;   
             }
-            return _onUse(player, target);
+            return false;
         }
     }
 }

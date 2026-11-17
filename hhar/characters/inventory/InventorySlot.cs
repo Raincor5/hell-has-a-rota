@@ -69,7 +69,9 @@ namespace hhar.characters.inventory
             return Item is null || Quantity <= 0;
         }
 
-        public void UseItem(Player player)
+        public void UseItem(Player player) => UseItem(player, player.Stats);
+
+        public void UseItem(Player player, object? target)
         {
             if (Item is null)
             {
@@ -87,8 +89,14 @@ namespace hhar.characters.inventory
                     Console.WriteLine($"Error equipping item: {ex.Message}");
                     return;
                 }
+                if (Item is not Potion)
+                    Item.OnUse(player, player.Stats);
+                RemoveItem(1);
+                return;
             }
-            Item.OnUse(player, player.Stats);
+
+            object? result = Item.OnUse<object?>(player, target);
+            if (result is null or false) return;
             RemoveItem(1);
         }
     }

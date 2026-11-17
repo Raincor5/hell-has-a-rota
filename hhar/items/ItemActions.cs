@@ -1,13 +1,11 @@
-using hhar.characters.inventory;
 using hhar.characters;
+using hhar.characters.inventory;
+using hhar.characters.stats;
+
 namespace hhar.items
 {
     public class ItemActions
     {
-        // Each item type has a defined action function. For example, a misc item can be used to unlock a door, a potion is always applied on the player, etc.
-        // The family of actions are defined using the simillar rules and theme for each of the item types.
-        // Left-hand items have defensive actions, right-hand items have offensive actions, quick-slot items have utility actions, and accessory items have passive actions.
-        private readonly Dictionary<EquipmentSlots, List<Func<Player, object?, bool>>> _itemActions; //Defines a dictionary that maps each equipment slot (or basically item type) to a list of functions that can be performed.
         private static readonly List<string> _noActionDescriptions = new List<string>
             {
                 "This item has no action.",
@@ -18,58 +16,118 @@ namespace hhar.items
                 "This item is just for show.",
                 "This item is purely decorative.",
                 "This item is a mystery. Its purpose is unknown.",
-                "This item is a puzzle. Its function is unclear.",
                 "Ask Steve. He might know what to do with this item.",
                 "Even the creators of this item don't know what it does."
             };
 
-        private static readonly Dictionary<Rarity, int> _rarityValuesStaminaRestoration = new Dictionary<Rarity, int>
+        private delegate bool Strategy(Player player, object? target, int power);
+
+        private static readonly Dictionary<(EquipmentSlots Slot, string Stat), Strategy[]> Strategies = new()
         {
-            { Rarity.Common, 3 },
-            { Rarity.Uncommon, 10 },
-            { Rarity.Rare, 15 },
-            { Rarity.Epic, 20 },
-            { Rarity.Legendary, 40 }
+            [(EquipmentSlots.LeftHand, "MaxStamina")] = [Restore],
+            [(EquipmentSlots.LeftHand, "MaxHealth")] = [Heal],
+            [(EquipmentSlots.LeftHand, "Defense")] = [BlockNext],
+            [(EquipmentSlots.RightHand, "MaxStamina")] = [Drain],
+            [(EquipmentSlots.RightHand, "MaxHealth")] = [LifeSteal],
+            [(EquipmentSlots.RightHand, "AttackDamage")] = [Strike],
+            [(EquipmentSlots.QuickSlot, "MaxStamina")] = [Restore],
+            [(EquipmentSlots.QuickSlot, "MaxHealth")] = [Heal],
+            [(EquipmentSlots.NotEquipment, "Intelligence")] = [Solve],
+            [(EquipmentSlots.NotEquipment, "Wisdom")] = [Apply]
         };
 
-        public ItemActions()
+        public static Func<Player, object?, bool> CreateAction(EquipmentSlots slot,
+            IEnumerable<StatModifier> modifiers, Rarity rarity, Random? random = null)
         {
-            _itemActions = new Dictionary<EquipmentSlots, List<Func<Player, object?, bool>>>
+            var primary = modifiers.GroupBy(m => m.StatName)
+                .Select(group => new { Stat = group.Key, Total = group.Sum(m => m.Modifier) })
+                .Where(entry => entry.Total > 0)
+                .OrderByDescending(entry => entry.Total)
+                .ThenBy(entry => entry.Stat, StringComparer.Ordinal)
+                .FirstOrDefault();
+
+            if (primary is null || !Strategies.TryGetValue((slot, primary.Stat), out var pool))
+                return NoAction;
+
+            var strategy = pool[(random ?? Random.Shared).Next(pool.Length)];
+            return Bind(strategy, rarity);
+        }
+
+        public static Func<Player, object?, bool> CreateRestoreStamina(Rarity rarity) =>
+            Bind(Restore, rarity);
+
+        private static Func<Player, object?, bool> Bind(Strategy strategy, Rarity rarity)
+        {
+            int power = rarity switch
             {
-                { EquipmentSlots.LeftHand, new List<Func<Player, object?, bool>>() }, // Defensive actions
-                { EquipmentSlots.RightHand, new List<Func<Player, object?, bool>>() }, // Offensive actions
-                { EquipmentSlots.QuickSlot, new List<Func<Player, object?, bool>>() }, // Utility actions
-                { EquipmentSlots.Accessory, new List<Func<Player, object?, bool>>() } // Passive actions
+                Rarity.Common => 3,
+                Rarity.Uncommon => 10,
+                Rarity.Rare => 15,
+                Rarity.Epic => 20,
+                Rarity.Legendary => 40,
+                _ => throw new ArgumentOutOfRangeException(nameof(rarity))
             };
+            return (player, target) => strategy(player, target, power);
         }
 
         private static bool NoAction(Player player, object? target)
         {
-            // This is a placeholder function that does nothing when an item is used without a defined action.
-            // It's used as a default action for items that don't have a specific use case.
-            Random rand = new Random();
-            int index = rand.Next(0, _noActionDescriptions.Count); // Generates a random number between
-            Console.WriteLine(_noActionDescriptions[index]);
-            return false; // Always returns false, indicating that no action was performed.
+            Console.WriteLine(_noActionDescriptions[Random.Shared.Next(_noActionDescriptions.Count)]);
+            return false;
         }
 
-        // Left-hand item actions (defensive) : Strategy + Factory
-        private static bool RestoreStamina(Player player, object? target, int amount)
+        private static bool Restore(Player player, object? target, int power)
         {
             var stats = player.Stats;
-            int restored = Math.Min(amount, stats.MaxStamina - stats.CurrentStamina);
-
-            if (restored <= 0)
-                return false;
-
+            int restored = Math.Min(power, stats.MaxStamina - stats.CurrentStamina);
+            if (restored <= 0) return false;
             stats.CurrentStamina += restored;
             Console.WriteLine($"Stamina restored by {restored} points.");
             return true;
         }
-        public static Func<Player, object?, bool> CreateRestoreStamina(Rarity rarity)
+
+        private static bool Heal(Player player, object? target, int power)
         {
-            int amount = _rarityValuesStaminaRestoration[rarity];
-            return (player, target) => RestoreStamina(player, target, amount);
+            var stats = player.Stats;
+            int restored = Math.Min(power, stats.MaxHealth - stats.CurrentHealth);
+            if (stats.CurrentHealth <= 0 || restored <= 0) return false;
+            stats.CurrentHealth += restored;
+            return true;
         }
+
+        private static bool BlockNext(Player player, object? target, int power) =>
+            player.Stats.PrepareBlock(power);
+
+        private static bool Drain(Player player, object? target, int power)
+        {
+            if (target is not ICharacter enemy || ReferenceEquals(player, enemy)) return false;
+            int drained = Math.Min(enemy.Stats.CurrentStamina, power);
+            if (enemy.Stats.CurrentHealth <= 0 || drained <= 0) return false;
+            enemy.Stats.CurrentStamina -= drained;
+            return true;
+        }
+
+        private static bool Strike(Player player, object? target, int power)
+        {
+            if (target is not ICharacter enemy || ReferenceEquals(player, enemy)
+                || enemy.Stats.CurrentHealth <= 0) return false;
+            enemy.TakeDamage(Math.Min(power, enemy.Stats.CurrentHealth));
+            return true;
+        }
+
+        private static bool LifeSteal(Player player, object? target, int power)
+        {
+            if (target is not ICharacter enemy) return false;
+            int before = enemy.Stats.CurrentHealth;
+            if (!Strike(player, enemy, power)) return false;
+            Heal(player, null, before - enemy.Stats.CurrentHealth);
+            return true;
+        }
+
+        private static bool Solve(Player player, object? target, int power) =>
+            target is IPuzzleTarget puzzle && puzzle.TrySolve(player, power);
+
+        private static bool Apply(Player player, object? target, int power) =>
+            target is IItemEffectTarget receiver && receiver.TryApply(player, power);
     }
 }
