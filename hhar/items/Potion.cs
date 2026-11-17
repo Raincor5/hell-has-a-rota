@@ -27,6 +27,7 @@ namespace hhar.items
             _onUse ??= ItemActions.CreateAction(EquipmentSlot, StatModifiers, Rarity);
             return _onUse(player, target);
         }
+        
         public EquipmentSlots EquipmentSlot => EquipmentSlots.QuickSlot;
 
         public Rarity Rarity { get; set; }
