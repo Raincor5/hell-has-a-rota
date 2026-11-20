@@ -1,6 +1,8 @@
 namespace hhar.Tests;
 
 using hhar.characters.inventory;
+using hhar.characters;
+using hhar.characters.stats;
 using hhar.items;
 
 public class TestInventory
@@ -38,5 +40,29 @@ public class TestInventory
         inventory.RemoveItem(item);
 
         Assert.True(inventory.Items[3].IsEmpty);
+    }
+
+    [Fact]
+    public void EquipAndUnequipItem_AppliesAndRemovesItsModifiers()
+    {
+        var player = new Player("Test");
+        player.Stats.SetBaseStats();
+        var weapon = new Weapon(
+            "Sword",
+            "A sword",
+            5,
+            [new StatModifier("Sharp", "AttackDamage", 3, "Sword")]);
+        var controller = new InventoryController(player);
+
+        controller.AddItem(weapon, 3);
+        controller.EquipItem(3);
+
+        Assert.Equal(8, player.Stats.AttackDamage);
+        Assert.Same(weapon, player.Equipment.Equipment[EquipmentSlots.RightHand].Item);
+
+        controller.UnequipItem(EquipmentSlots.RightHand);
+
+        Assert.Equal(5, player.Stats.AttackDamage);
+        Assert.True(player.Equipment.Equipment[EquipmentSlots.RightHand].IsEmpty);
     }
 }

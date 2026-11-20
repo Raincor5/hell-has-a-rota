@@ -89,8 +89,7 @@ namespace hhar.characters.inventory
                     Console.WriteLine($"Error equipping item: {ex.Message}");
                     return;
                 }
-                if (Item is not Potion)
-                    Item.OnUse(player, player.Stats);
+                player.Stats.AddModifiers(Item.GetStatModifiers());
                 RemoveItem(1);
                 return;
             }

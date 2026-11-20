@@ -2,14 +2,6 @@ using hhar.characters.stats;
 
 namespace hhar.items;
 
-public enum Rarity
-{
-    Common,
-    Uncommon,
-    Rare,
-    Epic,
-    Legendary
-}
 public record ModifierRange(string StatName, int Min, int Max);
 public record BuffDefinition(string Name, List<ModifierRange> Modifiers);
 public class ItemBuffs
